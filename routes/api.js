@@ -24,7 +24,9 @@ module.exports = function (app) {
       MongoClient.connect(CONNECTION_STRING, function(err, db) {
         if(err) console.log("Error:" + err);
         console.log("Connection suscefull");
-        db.collection('projects').findOne({issue_title: project}, (err,doc) => {
+        console.log(project);
+        console.log(req.query);
+        db.collection('projects').findOne({$and: [{issue_title: project}, req.query]}, (err,doc) => {
           if(err) console.log("Error: " + err);
           db.close();
           res.send(doc);

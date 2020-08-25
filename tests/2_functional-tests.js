@@ -31,13 +31,26 @@ suite('Functional Tests', function() {
           assert.equal(res.status, 200);
           
           //fill me in too!
-          
+          assert.equal(res.ok, true);
+          assert.equal(res.type, 'application/json');
           done();
         });
       });
       
       test('Required fields filled in', function(done) {
-        
+       chai.request(server)
+        .post('/api/issues/test')
+        .send({
+          issue_title: 'Title 2',
+          issue_text: 'text 2',
+          created_by: 'Functional Test - Required field filled in',
+        })
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.equal(res.ok, true);
+          assert.equal(res.type, 'application/json');
+          done();
+        }); 
       });
       
       test('Missing required fields', function(done) {
