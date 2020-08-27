@@ -23,9 +23,7 @@ module.exports = function (app) {
       var project = req.params.project;
       MongoClient.connect(CONNECTION_STRING, function(err, db) {
         if(err) console.log("Error:" + err);
-        console.log("Connection suscefull");
-        console.log(project);
-        console.log(req.query);
+        if(req.query.hasOwnProperty('open')) req.query.open = (req.query.open == 'true');
         db.collection('projects').findOne({$and: [{issue_title: project}, req.query]}, (err,doc) => {
           if(err) console.log("Error: " + err);
           db.close();
@@ -37,6 +35,11 @@ module.exports = function (app) {
     .post(function (req, res){
       //var project = req.params.project;
       var project = req.body;
+
+      if(!(project.issue_title && project.issue_text && project.created_by)) {
+        return res.send('Required fields are empty');
+      }
+
       var issueData = {
         issue_title: project.issue_title, 
         issue_text: project.issue_text, 
@@ -65,6 +68,7 @@ module.exports = function (app) {
     
     .put(function (req, res){
       var project = req.body;
+      if(!project._id) return res.send("Empty id field");
       MongoClient.connect(CONNECTION_STRING, function(err, db) {
         if(err) console.log(err);
 
@@ -86,9 +90,13 @@ module.exports = function (app) {
           {rating: 1},
           {$set: toUpdate}, 
           function (err,doc) {
-            if(err) console.log("Error: " + err);
-            res.json(doc);
-            db.close();
+            if(err) {
+              db.close();
+              res.send('could not update '+project._id);
+            } else {
+              db.close();
+              res.send('successfully updated');
+            }            
           }
         );
       });
@@ -96,6 +104,7 @@ module.exports = function (app) {
       
     .delete(function (req, res){
       var project = req.body;
+      if(!project._id) return res.send("Empty id field"); 
       MongoClient.connect(CONNECTION_STRING, function(err, db) {
         if(err) console.error(err);
         if(project._id !== '' && project._id.length >= 12) {
